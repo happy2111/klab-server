@@ -10,9 +10,9 @@ import {JwtRefreshGuard} from "../auth/guards/jwt-refresh.guard";
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
-  @UseGuards(JwtRefreshGuard, RolesGuard)
+  // @UseGuards(JwtRefreshGuard, RolesGuard)
   @Post()
-  @Roles('ADMIN')
+  // @Roles('ADMIN')
   create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoryService.create(createCategoryDto);
   }

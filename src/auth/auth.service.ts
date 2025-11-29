@@ -10,27 +10,42 @@ import { jwtConstants } from './constants';
 export class AuthService {
   constructor(private prisma: PrismaService, private jwtService: JwtService) {}
 
+  private cleanUser(user: any) {
+    const { password, ...rest } = user;
+    return rest;
+  }
+
   async register(dto: RegisterDto) {
     const hashed = await bcrypt.hash(dto.password, 10);
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        password: hashed,
-        name: dto.name,
-        role: dto.role || 'CLIENT',
-      },
-    });
-    return this.getTokens(user.id, user.email, user.role);
+    const user = this.cleanUser(
+      await this.prisma.user.create({
+        data: {
+          email: dto.email,
+          password: hashed,
+          name: dto.name,
+          role: dto.role || 'CLIENT',
+        },
+      })
+    );
+    const  tokens = this.getTokens(user.id, user.email, user.role)
+    return {user, tokens };
   }
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+      include: { products: true }
+    });
+
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
     const match = await bcrypt.compare(dto.password, user.password);
     if (!match) throw new UnauthorizedException('Invalid credentials');
 
-    return this.getTokens(user.id, user.email, user.role);
+    const clean = this.cleanUser(user);
+    const tokens = this.getTokens(clean.id, clean.email, clean.role);
+
+    return { user: clean, tokens };
   }
 
   async logout() {
@@ -41,7 +56,7 @@ export class AuthService {
     return this.getTokens(userId, email, role);
   }
 
-  private async getTokens(userId: string, email: string, role: string) {
+  private getTokens(userId: string, email: string, role: string) {
     const payload = { sub: userId, email, role };
     const accessToken = this.jwtService.sign(payload, {
       secret: jwtConstants.secret,
