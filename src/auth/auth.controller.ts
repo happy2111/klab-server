@@ -5,6 +5,8 @@ import { RegisterDto } from './dto/register.dto';
 import type { Response, Request } from 'express';
 import {JwtRefreshGuard} from "./guards/jwt-refresh.guard";
 
+const isProd = process.env.NODE_ENV === 'production';
+
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -15,6 +17,9 @@ export class AuthController {
     res.cookie('Refresh', tokens.refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
+      sameSite: isProd ? 'none' : 'lax',
+      secure: isProd,
+      path: '/',
     });
     return { accessToken: tokens.accessToken };
   }
@@ -25,6 +30,9 @@ export class AuthController {
     res.cookie('Refresh', tokens.refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
+      sameSite: isProd ? 'none' : 'lax',
+      secure: isProd,
+      path: '/',
     });
     return { accessToken: tokens.accessToken };
   }
@@ -37,13 +45,16 @@ export class AuthController {
     res.cookie('Refresh', tokens.refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
+      sameSite: isProd ? 'none' : 'lax',
+      secure: isProd,
+      path: '/',
     });
     return { accessToken: tokens.accessToken };
   }
 
   @Post('logout')
   async logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('Refresh');
+    res.clearCookie('Refresh', { sameSite: isProd ? 'none' : 'lax', secure: isProd, path: '/' });
     return this.authService.logout();
   }
 }

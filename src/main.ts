@@ -12,11 +12,12 @@ async function bootstrap() {
     origin: ['http://localhost:3000', 'https://osmon.vercel.app'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['Content-Type', 'Authorization'],
   });
 
   // Serve uploaded files statically at /upload
   app.useStaticAssets(join(process.cwd(), 'upload'), { prefix: '/upload' });
-
 
   app.use(cookieParser());
 
@@ -26,8 +27,6 @@ async function bootstrap() {
       whitelist: true, // убирает лишние поля
     }),
   );
-
-  app.useStaticAssets(join(process.cwd(), 'upload'), { prefix: '/upload' });
 
   await app.listen(process.env.PORT ?? 3000);
 }
