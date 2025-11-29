@@ -27,7 +27,17 @@ export class ChatService {
       where: {
         OR: [{ clientId: userId }, { sellerId: userId }],
       },
-      include: { messages: { include: { sender: true } } },
+      include: {
+        client: {
+          select: { id: true, name: true, email: true } // Выбираем только нужные поля
+        },
+        seller: {
+          select: { id: true, name: true, email: true } // Выбираем только нужные поля
+        },
+        messages: {
+          include: { sender: true }
+        },
+      },
     });
   }
 

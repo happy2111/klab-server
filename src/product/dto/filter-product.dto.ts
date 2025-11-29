@@ -7,6 +7,10 @@ export class FilterProductDto {
   categoryId?: string;
 
   @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
   @IsDateString()
   createdFrom?: string;
 

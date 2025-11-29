@@ -1,9 +1,9 @@
-import { IsString } from 'class-validator';
+import {IsString, IsUUID} from 'class-validator';
 
 export class CreateChatDto {
-  @IsString()
+  @IsUUID()
   clientId: string;
 
-  @IsString()
+  @IsUUID()
   sellerId: string;
 }

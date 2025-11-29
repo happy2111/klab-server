@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import { ProductModule } from './product/product.module';
 import { CategoryModule } from './category/category.module';
+import { ProfileModule } from './profile/profile.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CategoryModule } from './category/category.module';
     CategoryModule,
     ProductModule,
     ChatModule,
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService],
