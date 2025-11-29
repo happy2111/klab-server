@@ -1,11 +1,19 @@
-// Это гарантирует, что типы Multer будут доступны глобально
-// для использования в аннотации 'Express.Multer.File'
-import * as multer from 'multer';
+import 'multer';
 
 declare global {
   namespace Express {
     namespace Multer {
-      interface File extends multer.File {}
+      interface File {
+        fieldname: string;
+        originalname: string;
+        encoding: string;
+        mimetype: string;
+        size: number;
+        destination: string;
+        filename: string;
+        path: string;
+        buffer: Buffer;
+      }
     }
   }
 }
