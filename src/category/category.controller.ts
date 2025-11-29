@@ -7,10 +7,10 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import {JwtRefreshGuard} from "../auth/guards/jwt-refresh.guard";
 
 @Controller('categories')
-@UseGuards(JwtRefreshGuard, RolesGuard)
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
+  @UseGuards(JwtRefreshGuard, RolesGuard)
   @Post()
   @Roles('ADMIN')
   create(@Body() createCategoryDto: CreateCategoryDto) {
@@ -27,6 +27,7 @@ export class CategoryController {
     return this.categoryService.findOne(id);
   }
 
+  @UseGuards(JwtRefreshGuard, RolesGuard)
   @Patch(':id')
   @Roles('ADMIN')
   update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
