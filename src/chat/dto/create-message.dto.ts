@@ -9,4 +9,7 @@ export class CreateMessageDto {
 
   @IsString()
   content: string;
+
+  @IsString()
+  tempId?: string;
 }

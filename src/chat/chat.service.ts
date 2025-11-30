@@ -35,9 +35,12 @@ export class ChatService {
           select: { id: true, name: true, email: true } // Выбираем только нужные поля
         },
         messages: {
-          include: { sender: true }
+          include: { sender: true },
+          orderBy: { createdAt: 'desc' },
         },
       },
+      orderBy: { updatedAt: 'desc' },
+
     });
   }
 
