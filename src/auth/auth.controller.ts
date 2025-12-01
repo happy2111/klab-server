@@ -6,6 +6,7 @@ import type { Response, Request } from 'express';
 import {JwtRefreshGuard} from "./guards/jwt-refresh.guard";
 
 const isProd = process.env.NODE_ENV === 'production';
+const cookieDomain = process.env.COOKIE_DOMAIN ?? 'localhost';
 
 @Controller('auth')
 export class AuthController {
@@ -17,8 +18,9 @@ export class AuthController {
     res.cookie('Refresh', tokens.refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      sameSite: isProd ? 'none' : 'lax',
+      sameSite: "none",
       secure: isProd,
+      domain: cookieDomain,
       path: '/',
     });
     return {
