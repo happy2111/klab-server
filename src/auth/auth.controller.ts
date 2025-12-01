@@ -36,8 +36,9 @@ export class AuthController {
     res.cookie('Refresh', tokens.refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      sameSite: isProd ? 'none' : 'lax',
+      sameSite: "none",
       secure: isProd,
+      domain: cookieDomain,
       path: '/',
     });
     return { accessToken: tokens.accessToken, user  };
@@ -51,8 +52,9 @@ export class AuthController {
     res.cookie('Refresh', tokens.refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      sameSite: isProd ? 'none' : 'lax',
+      sameSite: "none",
       secure: isProd,
+      domain: cookieDomain,
       path: '/',
     });
     return { accessToken: tokens.accessToken, user};
