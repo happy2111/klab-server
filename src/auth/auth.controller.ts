@@ -6,7 +6,6 @@ import type { Response, Request } from 'express';
 import {JwtRefreshGuard} from "./guards/jwt-refresh.guard";
 
 const isProd = process.env.NODE_ENV === 'production';
-const cookieDomain = process.env.COOKIE_DOMAIN ?? 'localhost';
 
 @Controller('auth')
 export class AuthController {
@@ -18,7 +17,7 @@ export class AuthController {
     res.cookie('refresh', tokens.refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      sameSite: "none",
+      sameSite: isProd ? 'none' : 'lax',
       secure: isProd,
       path: '/',
     });
@@ -32,10 +31,10 @@ export class AuthController {
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
     const { user, tokens } = await this.authService.login(dto);
 
-    res.cookie('refresh', tokens.refreshToken, {
+    res.cookie('Refresh', tokens.refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      sameSite: "none",
+      sameSite: isProd ? 'none' : 'lax',
       secure: isProd,
       path: '/',
     });
@@ -47,10 +46,10 @@ export class AuthController {
   async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const user: any = req.user;
     const tokens = await this.authService.refresh(user.id, user.role, user.email);
-    res.cookie('refresh', tokens.refreshToken, {
+    res.cookie('Refresh', tokens.refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      sameSite: "none",
+      sameSite: isProd ? 'none' : 'lax',
       secure: isProd,
       path: '/',
     });
@@ -59,7 +58,7 @@ export class AuthController {
 
   @Post('logout')
   async logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('refresh', { sameSite: isProd ? 'none' : 'lax', secure: isProd, path: '/' });
+    res.clearCookie('Refresh', { sameSite: isProd ? 'none' : 'lax', secure: isProd, path: '/' });
     return this.authService.logout();
   }
 }

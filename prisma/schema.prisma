@@ -7,12 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  ADMIN
-  SELLER
-  CLIENT
-}
-
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -77,4 +71,10 @@ model Message {
 
   chat   Chat @relation(fields: [chatId], references: [id])
   sender User @relation(fields: [senderId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  SELLER
+  CLIENT
 }

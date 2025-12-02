@@ -8,6 +8,7 @@ import { ChatModule } from './chat/chat.module';
 import { ProductModule } from './product/product.module';
 import { CategoryModule } from './category/category.module';
 import { ProfileModule } from './profile/profile.module';
+import { Chat2Module } from './chat2/chat2.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ProfileModule } from './profile/profile.module';
     ProductModule,
     ChatModule,
     ProfileModule,
+    Chat2Module,
   ],
   controllers: [AppController],
   providers: [AppService],

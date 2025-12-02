@@ -1,9 +1,11 @@
-import {IsString, IsUUID} from 'class-validator';
+  import { IsString, IsUUID, IsNotEmpty } from 'class-validator';
 
-export class CreateChatDto {
-  @IsUUID()
-  clientId: string;
+  export class CreateChatDto {
+    @IsUUID()
+    @IsNotEmpty()
+    clientId: string;
 
-  @IsUUID()
-  sellerId: string;
-}
+    @IsUUID()
+    @IsNotEmpty()
+    sellerId: string;
+  }

@@ -1,73 +1,75 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateChatDto } from './dto/create-chat.dto';
-import { CreateMessageDto } from './dto/create-message.dto';
+// chat.service.ts
+import {ForbiddenException, Injectable} from "@nestjs/common";
+import {PrismaService} from "../prisma/prisma.service";
 
 @Injectable()
 export class ChatService {
   constructor(private prisma: PrismaService) {}
 
-  async createChat(dto: CreateChatDto) {
-    // Проверяем, существует ли уже чат между этими пользователями
-    const existing = await this.prisma.chat.findFirst({
-      where: { clientId: dto.clientId, sellerId: dto.sellerId },
+  // Получить все чаты текущего пользователя
+  async getUserChats(userId: string) {
+    const chatsAsClient = await this.prisma.chat.findMany({
+      where: { clientId: userId },
+      include: {
+        seller: { select: { id: true, name: true, email: true } },
+        client: { select: { id: true, name: true, email: true } },
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+      },
     });
+
+    const chatsAsSeller = await this.prisma.chat.findMany({
+      where: { sellerId: userId },
+      include: {
+        seller: { select: { id: true, name: true, email: true } },
+        client: { select: { id: true, name: true, email: true } },
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+      },
+    });
+
+    return [...chatsAsClient, ...chatsAsSeller].sort(
+      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+    );
+  }
+
+  // Создать чат или вернуть существующий
+  async createOrGetChat(clientId: string, sellerId: string) {
+    const existing = await this.prisma.chat.findFirst({
+      where: { clientId, sellerId },
+    });
+
     if (existing) return existing;
 
     return this.prisma.chat.create({
-      data: {
-        clientId: dto.clientId,
-        sellerId: dto.sellerId,
-      },
+      data: { clientId, sellerId },
     });
   }
 
-  async getChatsForUser(userId: string) {
-    return this.prisma.chat.findMany({
-      where: {
-        OR: [{ clientId: userId }, { sellerId: userId }],
-      },
+  // Получить чат + все сообщения (для истории при первом входе)
+  async getChatWithMessages(chatId: string, userId: string) {
+    const chat = await this.prisma.chat.findUnique({
+      where: { id: chatId },
       include: {
-        client: {
-          select: { id: true, name: true, email: true } // Выбираем только нужные поля
-        },
-        seller: {
-          select: { id: true, name: true, email: true } // Выбираем только нужные поля
-        },
         messages: {
-          include: { sender: true },
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: 'asc' },
+          include: {
+            sender: { select: { id: true, name: true } },
+          },
         },
+        client: { select: { id: true, name: true } },
+        seller: { select: { id: true, name: true } },
       },
-      orderBy: { updatedAt: 'desc' },
-
     });
-  }
 
-  async getMessages(chatId: string) {
-    return this.prisma.message.findMany({
-      where: { chatId },
-      include: { sender: true },
-      orderBy: { createdAt: 'asc' },
-    });
-  }
-
-  async createMessage(dto: CreateMessageDto) {
-    const chat = await this.prisma.chat.findUnique({ where: { id: dto.chatId } });
-    if (!chat) throw new NotFoundException('Chat not found');
-
-    // Проверка: только участники чата могут писать
-    if (![chat.clientId, chat.sellerId].includes(dto.senderId)) {
-      throw new ForbiddenException('Not participant of chat');
+    if (!chat || (chat.clientId !== userId && chat.sellerId !== userId)) {
+      throw new ForbiddenException('Доступ запрещён');
     }
 
-    return this.prisma.message.create({
-      data: {
-        chatId: dto.chatId,
-        senderId: dto.senderId,
-        content: dto.content,
-      },
-      include: { sender: true },
-    });
+    return chat;
   }
 }

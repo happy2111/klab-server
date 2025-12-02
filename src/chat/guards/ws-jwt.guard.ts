@@ -1,24 +1,51 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { WsException } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
+
+interface AuthSocket extends Socket {
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+  };
+}
 
 @Injectable()
 export class WsJwtGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const client = context.switchToWs().getClient<Socket>();
-    const token = client.handshake.auth.token || client.handshake.headers.authorization?.split(' ')[1];
-
-    if (!token) return false;
-
+  canActivate(context: ExecutionContext): boolean {
     try {
+      const client: AuthSocket = context.switchToWs().getClient();
+
+      // Если пользователь уже аутентифицирован
+      if (client.user) {
+        return true;
+      }
+
+      // Получаем токен из handshake
+      const token =
+        client.handshake.auth.token ||
+        client.handshake.headers.authorization?.split(' ')[1];
+
+      if (!token) {
+        throw new WsException('Unauthorized: No token provided');
+      }
+
+      // Верифицируем токен
       const payload = this.jwtService.verify(token);
-      client.data.user = payload;
+
+      // Добавляем пользователя в socket
+      client.user = {
+        id: payload.sub,
+        email: payload.email,
+        role: payload.role,
+      };
+
       return true;
-    } catch {
-      client.disconnect();
-      return false;
+    } catch (error) {
+      throw new WsException('Unauthorized: Invalid token');
     }
   }
 }

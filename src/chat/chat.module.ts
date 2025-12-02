@@ -1,14 +1,19 @@
 import { Module } from '@nestjs/common';
-import { ChatService } from './chat.service';
-import { ChatController } from './chat.controller';
 import { ChatGateway } from './chat.gateway';
-import { PrismaService } from '../prisma/prisma.service';
-import { AuthModule } from '../auth/auth.module';
-import { WsJwtGuard } from './guards/ws-jwt.guard';
+import { ChatService } from './chat.service';
+import { JwtModule } from '@nestjs/jwt';
+import { jwtConstants } from '../auth/constants';
+import {ChatController} from "./chat.controller";
 
 @Module({
-  imports: [AuthModule],
+  imports: [
+    JwtModule.register({
+      secret: jwtConstants.secret,
+      signOptions: { expiresIn: jwtConstants.accessExpiresIn as import('@nestjs/jwt').JwtSignOptions['expiresIn'] },
+    }),
+  ],
   controllers: [ChatController],
-  providers: [ChatService, ChatGateway, PrismaService, WsJwtGuard],
+  providers: [ChatGateway, ChatService],
+  exports: [ChatService],
 })
 export class ChatModule {}
