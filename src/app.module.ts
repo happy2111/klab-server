@@ -9,9 +9,13 @@ import { ProductModule } from './product/product.module';
 import { CategoryModule } from './category/category.module';
 import { ProfileModule } from './profile/profile.module';
 import { Chat2Module } from './chat2/chat2.module';
+import {ScheduleModule} from "@nestjs/schedule";
+import { PingModule } from './ping/ping.module';
+import {PingService} from "./ping/ping.service";
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -22,8 +26,9 @@ import { Chat2Module } from './chat2/chat2.module';
     ChatModule,
     ProfileModule,
     Chat2Module,
+    PingModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, PingService],
 })
 export class AppModule {}
