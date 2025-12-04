@@ -22,7 +22,6 @@ export class ProductController {
     @CurrentUser('id') sellerId: string,
     @UploadedFile() file?: Express.Multer.File,
   ) {
-    // handle multipart coercion for numeric/boolean fields coming as strings
     const anyDto = createProductDto as any;
     if (anyDto && typeof anyDto.price === 'string') {
       anyDto.price = Number(anyDto.price);
@@ -35,7 +34,6 @@ export class ProductController {
     }
 
     if (file) {
-      // Store relative path so it can be served statically if configured
       createProductDto.photo = `upload/${file.filename}`;
     }
     return this.productService.create(createProductDto, sellerId);
